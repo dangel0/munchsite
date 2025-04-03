@@ -134,7 +134,7 @@ export default function CategoryReviewsPage() {
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <CardTitle>{review.title}</CardTitle>
-                      <div className="flex items-center bg-gray-100 px-2 py-1 rounded">
+                      <div className="flex items-center px-2 py-1 rounded">
                         <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 mr-1" />
                         <span className="font-medium">{parseFloat(review.rating || 0).toFixed(1)}/10</span>
                       </div>

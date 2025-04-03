@@ -1,7 +1,8 @@
 'use client';
 
-import { Settings, Home, Bed, LogOut, Star, Mails } from "lucide-react"
+import { Settings, Home, Bed, LogOut, Star, Mails, Moon, Sun } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
+import { useTheme } from "next-themes"
 
 import {
   Sidebar,
@@ -48,6 +49,11 @@ const items = [
 
 export function AppSidebar() {
   const { logout } = useAuth();
+  const { setTheme, theme } = useTheme();
+
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
 
   return (
     <Sidebar>
@@ -66,6 +72,13 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              {/* Add theme toggle as a menu item for consistent UI */}
+              <SidebarMenuItem>
+                <SidebarMenuButton onClick={toggleTheme}>
+                  {theme === "dark" ? <Sun /> : <Moon />}
+                  <span>Toggle {theme === "dark" ? "Light" : "Dark"} Mode</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -74,7 +87,7 @@ export function AppSidebar() {
       <SidebarFooter className="mt-auto border-t pt-4">
         <Button 
           variant="ghost" 
-          className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+          className="w-full justify-start text-red-600 hover:text-red-700 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20"
           onClick={logout}
         >
           <LogOut className="mr-2 h-4 w-4" />
