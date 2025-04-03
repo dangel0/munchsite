@@ -35,7 +35,7 @@ export default function RootLayout({
           <AuthWrapper>
             <SidebarProvider>
               <AppSidebar />
-              <main>
+              <main className="container mx-auto p-4 max-w-[100%]">
                 <SidebarTrigger />
                 {children}
               </main>

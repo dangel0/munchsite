@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, Home, Inbox, LogOut, Search, Settings } from "lucide-react"
+import { Settings, Home, Bed, LogOut, Star, Mails } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 
 import {
@@ -26,23 +26,24 @@ const items = [
   {
     title: "Dreams",
     url: "/dreams",
-    icon: Inbox,
+    icon: Bed,
   },
   {
-    title: "Adventures",
-    url: "/adventures",
-    icon: Calendar,
+    title: "Letters",
+    url: "/letters",
+    icon: Mails,
   },
   {
     title: "Reviews",
     url: "/reviews",
-    icon: Search,
+    icon: Star,
   },
   {
     title: "Settings",
-    url: "#",
+    url: "/settings",
     icon: Settings,
   },
+
 ]
 
 export function AppSidebar() {
