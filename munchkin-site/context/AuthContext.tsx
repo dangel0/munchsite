@@ -6,7 +6,7 @@ import { pb } from '@/lib/pocketbase';
 type User = {
   id: string;
   email: string;
-  username: string;
+  name: string;
 } | null;
 
 type AuthContextType = {

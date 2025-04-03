@@ -1,4 +1,7 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
+'use client';
+
+import { Calendar, Home, Inbox, LogOut, Search, Settings } from "lucide-react"
+import { useAuth } from "@/context/AuthContext"
 
 import {
   Sidebar,
@@ -9,7 +12,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarFooter
 } from "@/components/ui/sidebar"
+import { Button } from "./ui/button"
 
 // Menu items.
 const items = [
@@ -41,6 +46,8 @@ const items = [
 ]
 
 export function AppSidebar() {
+  const { logout } = useAuth();
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -62,6 +69,17 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      
+      <SidebarFooter className="mt-auto border-t pt-4">
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+          onClick={logout}
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          Sign Out
+        </Button>
+      </SidebarFooter>
     </Sidebar>
   )
 }

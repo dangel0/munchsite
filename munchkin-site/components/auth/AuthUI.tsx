@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { RegisterForm } from '@/components/auth/RegisterForm';
@@ -17,7 +16,7 @@ export function AuthUI() {
   if (user) {
     return (
       <div className="p-4 border rounded-lg max-w-md mx-auto text-center">
-        <h2 className="text-2xl font-bold mb-4">Welcome, {user.username}!</h2>
+        <h2 className="text-2xl font-bold mb-4">Welcome, {user.name}!</h2>
         <p className="mb-4">You are logged in with: {user.email}</p>
         <Button onClick={logout}>Logout</Button>
       </div>
