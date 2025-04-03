@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { pb } from '@/lib/pocketbase';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
@@ -19,141 +19,123 @@ export default function DreamsPage() {
   const [retryCount, setRetryCount] = useState(0);
   const [formOpen, setFormOpen] = useState(false);
 
-  // Check if the server is available
-  const checkServerStatus = async () => {
+  // Check if the server is available - wrapped in useCallback
+  const checkServerStatus = useCallback(async () => {
     try {
-      // Try to make a simple request to PocketBase's health endpoint or collections endpoint
-      const response = await fetch('http://127.0.0.1:8090/api/health', { method: 'GET' });
-      if (response.ok) {
-        setServerStatus('online');
-        return true;
-      } else {
-        setServerStatus('offline');
-        return false;
-      }
+      const isOnline = await pb.collection('dreams').getList(1, 1, {
+        sort: '-created',
+        filter: 'id != ""',
+      }).then(() => true).catch(() => false);
+      
+      setServerStatus(isOnline ? 'online' : 'offline');
+      return isOnline;
     } catch (error) {
-      console.error('Server status check failed:', error);
       setServerStatus('offline');
       return false;
     }
-  };
+  }, []);
 
-  useEffect(() => {
-    async function initializeAndFetchData() {
-      const isServerOnline = await checkServerStatus();
-      if (!isServerOnline) {
-        setError('Cannot connect to the database server. Please make sure PocketBase is running.');
+  // Fetch dreams from the server - wrapped in useCallback
+  const fetchDreams = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Check server status first
+      const isOnline = await checkServerStatus();
+      
+      if (!isOnline) {
+        setError('Could not connect to the database server. Please try again later.');
         setLoading(false);
         return;
       }
-
-      fetchDreams();
-    }
-
-    if (user) {
-      initializeAndFetchData();
-    }
-  }, [user, retryCount]);
-
-  async function fetchDreams() {
-    if (!user) return;
-    
-    setLoading(true);
-    
-    try {
-      const records = await pb.collection('dreams').getFullList({
+      
+      const records = await pb.collection('dreams').getList(1, 50, {
         sort: '-created',
-        expand: 'user',
       });
       
-      setDreams(records);
-      setError(null);
+      setDreams(records.items);
+      setLoading(false);
     } catch (err: any) {
       console.error('Error fetching dreams:', err);
-      
-      // Provide more specific error messages based on the error
-      if (err.status === 0) {
-        setError('Connection to database failed. Please check if the PocketBase server is running.');
-      } else if (err.status === 403) {
-        setError('You do not have permission to view these dreams.');
-      } else {
-        setError(err.message || 'Failed to fetch dreams');
-      }
-    } finally {
+      setError(err.message || 'Failed to load dreams');
       setLoading(false);
     }
-  }
+  }, [checkServerStatus]);
 
+  // Handle dream added event
+  const handleDreamAdded = (newDream: any) => {
+    setDreams(prevDreams => [newDream, ...prevDreams]);
+    setFormOpen(false);
+  };
+
+  // Retry connection when offline
   const handleRetry = () => {
     setRetryCount(prev => prev + 1);
+    setServerStatus('checking');
+    fetchDreams();
   };
 
-  const handleNewDream = (newDream: any) => {
-    setDreams((prevDreams) => [newDream, ...prevDreams]);
-    setFormOpen(false); // Close the dialog after submitting
-  };
-  
-  const name = user?.name || user?.email || 'Anonymous';
+  // Initial load and retry mechanism
+  // Trigger the fetch on component mount and when retryCount changes
+  useEffect(() => {
+    fetchDreams();
+  }, [fetchDreams, retryCount]);
 
   return (
     <ProtectedRoute>
-      <div className="container mx-auto p-4 max-w-4xl">
+      <div className="container mx-auto p-4">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Dreams {name}</h1>
+          <h1 className="text-2xl font-bold">Dreams Journal</h1>
           
-          {serverStatus !== 'offline' && (
-            <Dialog open={formOpen} onOpenChange={setFormOpen}>
-              <DialogTrigger asChild>
-                <Button size="icon" className="rounded-full">
-                  <Plus className="h-5 w-5" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[500px]">
-                <DialogTitle>Add New Dream</DialogTitle>
-                <NewDreamForm onDreamAdded={handleNewDream} />
-              </DialogContent>
-            </Dialog>
-          )}
+          <Dialog open={formOpen} onOpenChange={setFormOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                New Dream
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogTitle>Record a New Dream</DialogTitle>
+              <NewDreamForm onDreamAdded={handleDreamAdded} />
+            </DialogContent>
+          </Dialog>
         </div>
-        
-        {serverStatus === 'offline' ? (
-          <div className="mb-8 p-6 bg-red-50 rounded-lg text-center">
-            <div className="flex items-center justify-center mb-4">
-              <AlertCircle className="w-8 h-8 text-red-500 mr-2" />
-              <h2 className="text-xl font-semibold text-red-700">Database Connection Error</h2>
+
+        {/* Error message */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-center">
+            <AlertCircle className="h-5 w-5 mr-2" />
+            <span>{error}</span>
+            {serverStatus === 'offline' && (
+              <Button variant="outline" size="sm" onClick={handleRetry} className="ml-auto">
+                Retry Connection
+              </Button>
+            )}
+          </div>
+        )}
+
+        {/* Loading state */}
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-center">
+              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p>Loading dreams...</p>
             </div>
-            <p className="mb-4">
-              Cannot connect to the PocketBase database. Please make sure the PocketBase server is running at http://127.0.0.1:8090.
-            </p>
-            <Button onClick={handleRetry}>Retry Connection</Button>
           </div>
         ) : (
-          <>
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold mb-4">Your Dreams</h2>
-              
-              {loading ? (
-                <p className="text-center py-8">Loading dreams...</p>
-              ) : error ? (
-                <div className="text-center py-8 bg-red-50 text-red-600 rounded-lg">
-                  <p>{error}</p>
-                  <Button 
-                    variant="outline" 
-                    className="mt-4"
-                    onClick={handleRetry}
-                  >
-                    Retry
-                  </Button>
-                </div>
-              ) : dreams.length === 0 ? (
-                <p className="text-center py-8 bg-gray-50 rounded-lg">No dreams yet. Add your first dream above!</p>
-              ) : (
-                dreams.map((dream) => (
-                  <DreamCard key={dream.id} dream={dream} />
-                ))
-              )}
-            </div>
-          </>
+          /* Dreams grid - responsive columns */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {dreams.length === 0 ? (
+              <div className="col-span-full text-center py-12 bg-gray-50 rounded-lg">
+                <p className="text-gray-500">No dreams found. Create your first dream!</p>
+              </div>
+            ) : (
+              dreams.map(dream => (
+                <DreamCard key={dream.id} dream={dream} />
+              ))
+            )}
+          </div>
         )}
       </div>
     </ProtectedRoute>
