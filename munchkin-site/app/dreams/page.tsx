@@ -69,6 +69,16 @@ export default function DreamsPage() {
     setFormOpen(false);
   };
 
+  // Handle dream updates
+  const handleDreamUpdated = useCallback(() => {
+    fetchDreams();
+  }, [fetchDreams]);
+  
+  // Handle dream deletions  
+  const handleDreamDeleted = useCallback(() => {
+    fetchDreams();
+  }, [fetchDreams]);
+
   // Retry connection when offline
   const handleRetry = () => {
     setRetryCount(prev => prev + 1);
@@ -132,7 +142,12 @@ export default function DreamsPage() {
               </div>
             ) : (
               dreams.map(dream => (
-                <DreamCard key={dream.id} dream={dream} />
+                <DreamCard 
+                  key={dream.id} 
+                  dream={dream} 
+                  onDreamUpdated={handleDreamUpdated}
+                  onDreamDeleted={handleDreamDeleted}
+                />
               ))
             )}
           </div>
