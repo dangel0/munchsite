@@ -6,6 +6,7 @@ export default function Home() {
   return (
     <main className="container mx-auto p-4 max-w-3xl">
       <h1 className="text-3xl font-bold text-center my-8">Hey Buddy,</h1>
+      <h2 className="text-xl text-center mb-6">Love u</h2>
     </main>
   );
 }
