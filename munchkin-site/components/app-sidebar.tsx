@@ -65,7 +65,8 @@ export function AppSidebar() {
         <SidebarGroup>
           {/* Changed text color: light mode uses gray, dark mode remains white */}
           <SidebarGroupLabel className="text-gray-900 dark:text-white font-bold">
-            What's Good, {user?.name || 'Friend'}
+            <p>What's Good </p> 
+            <p className="pl-1.5 text-lg font-bold text-center bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"> {user?.name || 'Friend'} </p>
           </SidebarGroupLabel>
           <Separator className="my-2" />
           <SidebarGroupContent>

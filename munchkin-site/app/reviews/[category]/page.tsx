@@ -6,12 +6,13 @@ import { pb } from '@/lib/pocketbase';
 import { useAuth } from '@/context/AuthContext';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { AlertCircle, ArrowLeft, Plus, Star } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Plus, Star, Edit, Trash } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 import { AddReviewForm } from '@/components/reviews/AddReviewForm';
+import { EditReviewForm } from '@/components/reviews/EditReviewForm';
 
 export default function CategoryReviewsPage() {
   const params = useParams();
@@ -22,6 +23,10 @@ export default function CategoryReviewsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [currentReview, setCurrentReview] = useState<any | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { user } = useAuth();
 
   // Fetch reviews for this category
@@ -52,6 +57,49 @@ export default function CategoryReviewsPage() {
     setIsDialogOpen(false);
   };
 
+  // Handle review update
+  const handleReviewUpdated = (updatedReview: any) => {
+    setReviews(prevReviews => 
+      prevReviews.map(review => 
+        review.id === updatedReview.id ? updatedReview : review
+      )
+    );
+    setIsEditDialogOpen(false);
+    setCurrentReview(null);
+  };
+
+  // Handle review delete
+  const handleDeleteReview = async () => {
+    if (!currentReview) return;
+    
+    setIsDeleting(true);
+    setError(null);
+    
+    try {
+      await pb.collection('reviews').delete(currentReview.id);
+      setReviews(prevReviews => prevReviews.filter(review => review.id !== currentReview.id));
+      setIsDeleteDialogOpen(false);
+      setCurrentReview(null);
+    } catch (err: any) {
+      console.error('Error deleting review:', err);
+      setError(err.message || 'Failed to delete review');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Open edit dialog
+  const openEditDialog = (review: any) => {
+    setCurrentReview(review);
+    setIsEditDialogOpen(true);
+  };
+  
+  // Open delete dialog
+  const openDeleteDialog = (review: any) => {
+    setCurrentReview(review);
+    setIsDeleteDialogOpen(true);
+  };
+
   // Calculate average rating for the category
   const averageRating = reviews.length 
     ? (reviews.reduce((sum, review) => sum + (review.rating || 0), 0) / reviews.length).toFixed(1) 
@@ -63,6 +111,11 @@ export default function CategoryReviewsPage() {
       fetchReviews();
     }
   }, [category, fetchReviews]);
+
+  // Check if current user is the author of a review
+  const isAuthor = (review: any) => {
+    return true;
+  };
 
   return (
     <ProtectedRoute>
@@ -134,9 +187,32 @@ export default function CategoryReviewsPage() {
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <CardTitle>{review.title}</CardTitle>
-                      <div className="flex items-center px-2 py-1 rounded">
-                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 mr-1" />
-                        <span className="font-medium">{parseFloat(review.rating || 0).toFixed(1)}/10</span>
+                      <div className="flex items-center">
+                        <div className="flex items-center px-2 py-1 rounded mr-2">
+                          <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 mr-1" />
+                          <span className="font-medium">{parseFloat(review.rating || 0).toFixed(1)}/10</span>
+                        </div>
+                        {isAuthor(review) && (
+                          <div className="flex space-x-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openEditDialog(review)}
+                              title="Edit review"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openDeleteDialog(review)}
+                              title="Delete review"
+                              className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                            >
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <CardDescription>
@@ -153,6 +229,46 @@ export default function CategoryReviewsPage() {
             )}
           </div>
         )}
+
+        {/* Edit Review Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent>
+            <DialogTitle>Edit Review</DialogTitle>
+            {currentReview && (
+              <EditReviewForm
+                review={currentReview}
+                category={category}
+                onReviewUpdated={handleReviewUpdated}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <DialogContent>
+            <DialogTitle>Delete Review</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this review? This action cannot be undone.
+            </DialogDescription>
+            <DialogFooter className="mt-4">
+              <Button
+                variant="outline"
+                onClick={() => setIsDeleteDialogOpen(false)}
+                disabled={isDeleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteReview}
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </ProtectedRoute>
   );

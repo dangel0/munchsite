@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@/context/AuthContext';
 import { pb } from '@/lib/pocketbase';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { DreamCard } from '@/components/dreams/DreamCard';
@@ -14,7 +13,6 @@ export default function DreamsPage() {
   const [dreams, setDreams] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
   const [serverStatus, setServerStatus] = useState<'online' | 'offline' | 'checking'>('checking');
   const [retryCount, setRetryCount] = useState(0);
   const [formOpen, setFormOpen] = useState(false);
@@ -94,7 +92,7 @@ export default function DreamsPage() {
 
   return (
     <ProtectedRoute>
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto p-4 rounded-2xl" >
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Dreams Journal</h1>
           
@@ -135,7 +133,12 @@ export default function DreamsPage() {
           </div>
         ) : (
           /* Dreams grid - responsive columns */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="rounded-2xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" style={{ 
+        backgroundImage: 'url("https://images.unsplash.com/photo-1516060610219-308fc12a5e37?q=80&w=2012&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")', 
+        backgroundSize: 'cover', 
+        backgroundPosition: 'center', 
+        backgroundRepeat: 'repeat' 
+      }}>
             {dreams.length === 0 ? (
               <div className="col-span-full text-center py-12 bg-gray-50 rounded-lg">
                 <p className="text-gray-500">No dreams found. Create your first dream!</p>

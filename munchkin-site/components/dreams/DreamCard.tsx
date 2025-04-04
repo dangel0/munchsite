@@ -53,7 +53,7 @@ export function DreamCard({ dream, onDreamUpdated, onDreamDeleted }: DreamCardPr
 
   return (
     <>
-      <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setIsDialogOpen(true)}>
+      <Card className="cursor-pointer m-2 hover:shadow-md transition-shadow" onClick={() => setIsDialogOpen(true)}>
         <CardHeader>
           <CardTitle>{dream.title}</CardTitle>
           <CardDescription>
