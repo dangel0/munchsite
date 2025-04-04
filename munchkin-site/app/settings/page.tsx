@@ -7,11 +7,20 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 
+// Define a type that extends the base user type with avatar
+interface UserWithAvatar {
+  id: string
+  email: string
+  name: string
+  avatar?: string
+}
+
 export default function SettingsPage() {
   const { user } = useAuth()
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
-  const [avatar, setAvatar] = useState<File | null>(null) // New state for avatar
+  const [avatar, setAvatar] = useState<File | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -20,8 +29,31 @@ export default function SettingsPage() {
     if (user) {
       setName(user.name || "")
       setEmail(user.email || "")
+      
+      // Cast user to UserWithAvatar type and check for avatar
+      const userWithAvatar = user as unknown as UserWithAvatar
+      if (userWithAvatar.avatar) {
+        setAvatarUrl(
+          pb.files.getUrl(userWithAvatar, userWithAvatar.avatar, { thumb: '100x100' })
+        )
+      }
     }
   }, [user])
+
+  // Handle avatar file selection and create preview
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files ? e.target.files[0] : null
+    setAvatar(file)
+    
+    if (file) {
+      // Create a preview URL for the selected file
+      const objectUrl = URL.createObjectURL(file)
+      setAvatarUrl(objectUrl)
+      
+      // Clean up the object URL when component unmounts or when avatar changes
+      return () => URL.revokeObjectURL(objectUrl)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -61,6 +93,22 @@ export default function SettingsPage() {
             {message}
           </div>
         )}
+        
+        {/* Avatar Display */}
+        <div className="flex flex-col items-center mb-4">
+          {avatarUrl ? (
+            <img 
+              src={avatarUrl} 
+              alt="Profile avatar" 
+              className="w-24 h-24 rounded-full object-cover border-2 border-gray-200"
+            />
+          ) : (
+            <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
+              <span className="text-gray-500">No Avatar</span>
+            </div>
+          )}
+        </div>
+
         <div className="space-y-1">
           <Label htmlFor="name">Name</Label>
           <Input
@@ -80,16 +128,14 @@ export default function SettingsPage() {
             required
           />
         </div>
-        {/* New Avatar Input */}
+        {/* Updated Avatar Input */}
         <div className="space-y-1">
           <Label htmlFor="avatar">Avatar</Label>
           <Input
             id="avatar"
             type="file"
             accept="image/*"
-            onChange={(e) =>
-              setAvatar(e.target.files ? e.target.files[0] : null)
-            }
+            onChange={handleAvatarChange}
           />
         </div>
         <Button type="submit" disabled={isSubmitting} className="w-full">
