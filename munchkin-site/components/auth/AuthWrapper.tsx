@@ -21,8 +21,8 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
   if (!user) {
     return (
       <div className="container mx-auto p-4 max-w-lg min-h-screen flex flex-col justify-center">
-        <h1 className="text-3xl font-bold text-center mb-8">Munchkin Site</h1>
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <h1 className="text-3xl font-bold text-center mb-8">Top Secret Super Secret Site</h1>
+        <div className=" p-6 rounded-lg shadow-md">
           <h2 className="text-xl text-center mb-6">Please log in or sign up to continue</h2>
           <AuthUI />
         </div>

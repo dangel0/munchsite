@@ -27,8 +27,8 @@ export function RegisterForm() {
   };
 
   return (
-    <div className="space-y-4 p-4 border rounded-lg max-w-md mx-auto">
-      <h2 className="text-2xl font-bold">Sign Up</h2>
+    <div className="space-y-4 p-4 border rounded-lg max-w-md mx-auto bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Sign Up</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <Alert variant="destructive">
