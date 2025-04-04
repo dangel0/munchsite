@@ -46,7 +46,6 @@ const items = [
     url: "/settings",
     icon: Settings,
   },
-
 ]
 
 export function AppSidebar() {
@@ -60,15 +59,18 @@ export function AppSidebar() {
 
   return (
     <div className="border-r-6 border-black-300 dark:border-white-400/70">
-    <Sidebar >
+    <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          {/* Changed text color: light mode uses gray, dark mode remains white */}
-          <SidebarGroupLabel className="text-gray-900 dark:text-white font-bold">
-            <p>What's Good </p> 
-            <p className="pl-1.5 text-lg font-bold text-center bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"> {user?.name || 'Friend'} </p>
-          </SidebarGroupLabel>
-          <Separator className="my-2" />
+          <div className="bg-gradient-to-r from-blue-500 to-purple-500 dark:from-indigo-600 dark:to-purple-700 p-3 rounded-lg mb-3 shadow-md transition-all duration-300 hover:shadow-lg">
+            <SidebarGroupLabel className="text-white font-bold flex items-center">
+              <p>What's Good </p> 
+              <p className="pl-1.5 text-lg font-bold text-white animate-pulse-subtle"> 
+                {user?.name || 'Friend'} 
+              </p>
+            </SidebarGroupLabel>
+          </div>
+          <Separator className="my-2 bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => {
@@ -78,10 +80,11 @@ export function AppSidebar() {
                     <SidebarMenuButton 
                       asChild 
                       className={`text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 
-                      ${isActive ? 'bg-gray-200 text-gray-900 dark:bg-white/20 dark:text-white font-medium' : ''}`}
+                      transition-all duration-300 btn-pop
+                      ${isActive ? 'bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-700 dark:text-blue-300 font-medium border-l-4 border-blue-500 dark:border-blue-400' : ''}`}
                     >
                       <a href={item.url}>
-                        <item.icon className={isActive ? 'text-gray-900 dark:text-white' : ''} />
+                        <item.icon className={`transition-transform duration-300 ${isActive ? 'text-blue-600 dark:text-blue-400 scale-110' : ''}`} />
                         <span>{item.title}</span>
                       </a>
                     </SidebarMenuButton>
@@ -92,11 +95,11 @@ export function AppSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   onClick={toggleTheme}
-                  className="text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10"
+                  className="text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-300 btn-pop"
                 >
                   {theme === "dark" ? 
-                    <Sun className="text-yellow-300" /> : 
-                    <Moon className="text-blue-300" />
+                    <Sun className="text-amber-400" /> : 
+                    <Moon className="text-indigo-500" />
                   }
                   <span> {theme === "dark" ? "Light" : "Dark"} Mode</span>
                 </SidebarMenuButton>
@@ -109,7 +112,7 @@ export function AppSidebar() {
       <SidebarFooter className="mt-auto border-t border-gray-300 dark:border-white/10 pt-4">
         <Button 
           variant="ghost" 
-          className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-200 dark:hover:text-red-100 dark:hover:bg-red-900/30"
+          className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30 transition-all duration-300"
           onClick={logout}
         >
           <LogOut className="mr-2 h-4 w-4" />

@@ -41,13 +41,17 @@ export default function RootLayout({
         >
           <AuthProvider>
             <AuthWrapper>
-              <SidebarProvider>
-                <AppSidebar />
-                <main className="container mx-auto p-4 max-w-[100%]">
-                  <SidebarTrigger />
-                  {children}
-                </main>
-              </SidebarProvider>
+              <div className="bg-pattern min-h-screen">
+                <SidebarProvider>
+                  <AppSidebar />
+                  <main className="container mx-auto p-4 max-w-[100%] transition-all duration-300 ease-in-out">
+                    <SidebarTrigger className="hover:rotate-12 transition-transform duration-300" />
+                    <div className="mt-4 animate-fadeIn">
+                      {children}
+                    </div>
+                  </main>
+                </SidebarProvider>
+              </div>
             </AuthWrapper>
           </AuthProvider>
         </ThemeProvider>
